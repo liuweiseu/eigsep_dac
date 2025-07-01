@@ -186,7 +186,7 @@ def main():
     rfsoc.write_int('wf_en', 1)
     samples_per_cyc = dac_fft_len
     max_addr = int(samples_per_cyc*bytes_per_sample/bytes_per_axis - 3)
-    print('max_addr', max_addr)
+    print('%s: %s'%('Max Addr'.ljust(FIXED_LEN), max_addr))
     rfsoc.write_int('addr_max', max_addr)
     print('**************************************')
     print('Done!')
