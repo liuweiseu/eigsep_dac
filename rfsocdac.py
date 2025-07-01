@@ -150,11 +150,13 @@ def main():
     ## Check if we already have data file
     if args.npz is not None:
         print('**************************************')
-        print('Load data from %s'%args.npz)
+        print('Load data from npz file')
+        print('%s: %s'%('File Name'.ljust(10), max_addr))
         dfiles = np.load(args.npz)
         data = dfiles['data']
         max_addr = dfiles['max_addr']
-        print('%s: %s'%('Max Addr'.ljust(FIXED_LEN), max_addr))
+        print('%s: %d'%('Samples'.ljust(10), len(data)))
+        print('%s: %d'%('Max Addr'.ljust(10), max_addr))
     else:
         # adc sampling rate
         adc_fs = args.adcfs
