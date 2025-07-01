@@ -185,6 +185,7 @@ def main():
         max_addr = int(samples_per_cyc*bytes_per_sample/bytes_per_axis - 3)
         rfsoc.write_int('wf_en', 1)
         print('%s: %s'%('Max Addr'.ljust(FIXED_LEN), max_addr))
+        print('%s: %s'%('Peak Value'.ljust(FIXED_LEN), max(d_time.real)))
     # write data into sbram for the DAC
     nbuf = ToBytes(data)
     zeros = np.zeros(2**13*2, dtype=np.short)
