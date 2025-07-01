@@ -102,6 +102,7 @@ def ToBytes(data):
     return buf
 
 def print_parameters(args):
+    print('**************************************')
     print('%s: %s'%('ADC Sampling Rate(MSps):'.ljust(FIXED_LEN), args.adcfs))
     print('%s: %s'%('ADC FFT points:'.ljust(FIXED_LEN), args.adcfft))
     print('%s: %s'%('DAC Sampling Rate(MSps):'.ljust(FIXED_LEN), args.dacfs))
@@ -124,23 +125,31 @@ def main():
     parser.add_argument('--skip-config', dest='skipconfig', action='store_true', default=False, help='Skip the FPGA and PLL config.')
     args = parser.parse_args()
     # config the rfosc2x2
-    rfsoc=casperfpga.CasperFpga(args.ip)
-    rfsoc.upload_to_ram_and_program('rfsocdactut_2025-06-30_1113.fpg')
-    rfdc = rfsoc.adcs['rfdc']
-    ## init rfdc
-    rfdc.init()
-    ## init LMK and LMX
-    c = rfdc.show_clk_files()
-    # ref = 12.5MHz
-    ## rfdc.progpll('lmk', c[0])
-    # ref = 250MHz
-    rfdc.progpll('lmk', c[1])
-    rfdc.progpll('lmx', c[3])
-    time.sleep(1)
-    rfdc.status()
+    print('**************************************')
+    print('Conneting to RFSoC2x2 at %s...'%args.ip)
+    rfsoc=casperfpga.CasperFpga(args.ip, transport=casperfpga.KatcpTransport)
+    if not args.skipconfig:
+        print('**************************************')
+        print('Configuring FPGA with %s...'%args.fpg)
+        rfsoc.upload_to_ram_and_program(args.fpg)
+        print('**************************************')
+        print('Configuring PLLs...')
+        rfdc = rfsoc.adcs['rfdc']
+        ## init rfdc
+        rfdc.init()
+        ## init LMK and LMX
+        c = rfdc.show_clk_files()
+        # ref = 12.5MHz
+        ## rfdc.progpll('lmk', c[0])
+        # ref = 250MHz
+        rfdc.progpll('lmk', c[1])
+        rfdc.progpll('lmx', c[3])
+        time.sleep(1)
+        rfdc.status()
     # Generate data for DAC
     ## Check if we already have data file
     if args.npz is not None:
+        print('**************************************')
         print('Load data from %s'%args.npz)
         dfiles = np.load(args.npz)
         data = dfiles['data']
@@ -179,6 +188,7 @@ def main():
     max_addr = int(samples_per_cyc*bytes_per_sample/bytes_per_axis - 3)
     print('max_addr', max_addr)
     rfsoc.write_int('addr_max', max_addr)
+    print('**************************************')
     print('Done!')
 
 if __name__ == '__main__':

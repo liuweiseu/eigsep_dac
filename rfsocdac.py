@@ -127,7 +127,7 @@ def main():
     # config the rfosc2x2
     print('**************************************')
     print('Conneting to RFSoC2x2 at %s...'%args.ip)
-    rfsoc=casperfpga.CasperFpga(args.ip)
+    rfsoc=casperfpga.CasperFpga(args.ip, transport=casperfpga.KatcpTransport)
     if not args.skipconfig:
         print('**************************************')
         print('Configuring FPGA with %s...'%args.fpg)
@@ -188,6 +188,7 @@ def main():
     max_addr = int(samples_per_cyc*bytes_per_sample/bytes_per_axis - 3)
     print('max_addr', max_addr)
     rfsoc.write_int('addr_max', max_addr)
+    print('**************************************')
     print('Done!')
 
 if __name__ == '__main__':
