@@ -120,7 +120,7 @@ def main():
     parser.add_argument('--adc-fft', dest='adcfft', type=int, default=2048, help='FFT points on the ADC samples.')
     parser.add_argument('--adc-fs', dest='adcfs', type=float, default=500.0, help='ADC sampling rate in MSps.')
     parser.add_argument('--dac-fs', dest='dacfs', type=float, default=1000.0, help='DAC sampling rate in MSps.')
-    parser.add_argument('--scale', dest='scale', type=int, default=2**20, help='The DAC output scale.')
+    parser.add_argument('--scale', dest='scale', type=str, default='2**20', help='The DAC output scale.')
     parser.add_argument('--npz', dest='npz', type=str, default=None, help='The npz file, which stores the data written into DAC. The key has to be `data`.')
     parser.add_argument('--skip-config', dest='skipconfig', action='store_true', default=False, help='Skip the FPGA and PLL config.')
     args = parser.parse_args()
@@ -153,6 +153,8 @@ def main():
         print('Load data from %s'%args.npz)
         dfiles = np.load(args.npz)
         data = dfiles['data']
+        max_addr = dfiles['max_addr']
+        print('%s: %s'%('Max Addr'.ljust(FIXED_LEN), max_addr))
     else:
         # adc sampling rate
         adc_fs = args.adcfs
@@ -170,25 +172,30 @@ def main():
         bytes_per_sample = 2
         # dac FFT length
         dac_fft_len = args.daclen
-        scale = args.scale
+        scale = eval(args.scale)
         print_parameters(args)
         single_bin = int(single_bin*dac_fft_len//fft_points//(dac_fs//adc_fs))
         # generate the data for the DAC with DAC sampling rate=1000
         cfil = CreateTestFilter(dac_fft_len, fft_points, bw = bw/dac_fs*2)
         d_time = DacDataGen(dac_fft_len, cfil, single_bin=single_bin, scale = scale)
         data = d_time.real
+        samples_per_cyc = dac_fft_len
+        max_addr = int(samples_per_cyc*bytes_per_sample/bytes_per_axis - 3)
+        rfsoc.write_int('wf_en', 1)
+        print('%s: %s'%('Max Addr'.ljust(FIXED_LEN), max_addr))
     # write data into sbram for the DAC
     nbuf = ToBytes(data)
     zeros = np.zeros(2**13*2, dtype=np.short)
     zeros_bytes = struct.pack('>%dh'%len(zeros), *zeros)
     rfsoc.write('wf_bram_0', zeros_bytes)
     rfsoc.write('wf_bram_0', nbuf)
-    rfsoc.write_int('wf_en', 1)
-    samples_per_cyc = dac_fft_len
-    max_addr = int(samples_per_cyc*bytes_per_sample/bytes_per_axis - 3)
-    print('%s: %s'%('Max Addr'.ljust(FIXED_LEN), max_addr))
     rfsoc.write_int('addr_max', max_addr)
-    print('**************************************')
+    rfsoc.write_int('wf_en', 1)
+    print('*******************************************')
+    print('* Note: There are 2 clks delay in the max_addr')
+    print('        comparison in the FPGA design, so the')
+    print('        max_addr should be subtracted by 2.')
+    print('*******************************************')
     print('Done!')
 
 if __name__ == '__main__':
