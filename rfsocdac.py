@@ -112,7 +112,7 @@ def print_parameters(args):
 
 def main():
     parser = ArgumentParser(description="Usage for Setting DAC on RFSoC2x2.")
-    parser.add_argument('--ip',dest='ip', type=str, default='localhost',help='The IP address of the RFSoC2x2')
+    parser.add_argument('--ip',dest='ip', type=str, default='127.0.0.1',help='The IP address of the RFSoC2x2')
     parser.add_argument('--fpg',dest='fpg', type=str, default='rfsocdactut_2025-06-30_1113.fpg', help='The fpg file uploaded to the board.')
     parser.add_argument('--single-bin', dest='sbin', type=int, default=0, help='The bin number of the signal. 0 means all bins.')
     parser.add_argument('--bw', dest='bw', type=float, default=250.0, help='The bandwidth of the signal in MHz.')
@@ -125,14 +125,14 @@ def main():
     parser.add_argument('--skip-config', dest='skipconfig', action='store_true', default=False, help='Skip the FPGA and PLL config.')
     args = parser.parse_args()
     # config the rfosc2x2
-    print('**************************************')
+    print('*******************************************')
     print('Conneting to RFSoC2x2 at %s...'%args.ip)
     rfsoc=casperfpga.CasperFpga(args.ip, transport=casperfpga.KatcpTransport)
     if not args.skipconfig:
-        print('**************************************')
+        print('*******************************************')
         print('Configuring FPGA with %s...'%args.fpg)
         rfsoc.upload_to_ram_and_program(args.fpg)
-        print('**************************************')
+        print('*******************************************')
         print('Configuring PLLs...')
         rfdc = rfsoc.adcs['rfdc']
         ## init rfdc
@@ -149,7 +149,7 @@ def main():
     # Generate data for DAC
     ## Check if we already have data file
     if args.npz is not None:
-        print('**************************************')
+        print('*******************************************')
         print('Load data from npz file')
         print('%s: %s'%('File Name'.ljust(10), args.npz))
         dfiles = np.load(args.npz)
