@@ -178,3 +178,6 @@ def main():
     print('max_addr', max_addr)
     rfsoc.write_int('addr_max', max_addr)
     print('Done!')
+
+if __name__ == '__main__':
+    main()
