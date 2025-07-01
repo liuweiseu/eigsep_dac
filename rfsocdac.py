@@ -151,7 +151,7 @@ def main():
     if args.npz is not None:
         print('**************************************')
         print('Load data from npz file')
-        print('%s: %s'%('File Name'.ljust(10), max_addr))
+        print('%s: %s'%('File Name'.ljust(10), args.npz))
         dfiles = np.load(args.npz)
         data = dfiles['data']
         max_addr = dfiles['max_addr']
